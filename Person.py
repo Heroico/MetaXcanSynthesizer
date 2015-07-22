@@ -37,12 +37,12 @@ class Person(object):
         return person
 
     @classmethod
-    def filterSamples(cls, input, output, row_delimiter=' '):
+    def filterSamples(cls, input, output, row_delimiter=' ', skip_header=True):
         filtered = []
         with open(input, 'rb') as csv_file:
             reader = csv.reader(csv_file, delimiter=row_delimiter, quotechar='"')
             for row in reader:
-                if reader.line_num == 1:
+                if skip_header and reader.line_num == 1:
                     continue
 
                 person = Person.loadPersonFromSampleRowIfEuropean(row)
@@ -55,12 +55,12 @@ class Person(object):
                 output_file.write(person.toTextLine()+"\n")
 
     @classmethod
-    def allPeople(cls, input, delim=' '):
+    def allPeople(cls, input, delim=' ', skip_header=True):
         people = []
         with open(input, 'rb') as csv_file:
             reader = csv.reader(csv_file, delimiter=delim, quotechar='"')
             for row in reader:
-                if reader.line_num == 1:
+                if skip_header and reader.line_num == 1:
                     continue
                 person = Person.loadPersonFromSampleRow(row)
                 people.append(person)

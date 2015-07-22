@@ -37,7 +37,7 @@ class GenerateMasterList(object):
             logging.info("%s already exists, delete it if you want it to be done again", filtered_samples_path)
         else:
             logging.info("Filtering people")
-            Person.Person.filterSamples(samples_path, filtered_samples_path, "\t")
+            Person.Person.filterSamples(samples_path, filtered_samples_path, "\t", False)
 
     def samplesInputPath(self):
         samples_file = Utilities.contentsWithPatternsFromFolder(self.input_path, ["samples"])[0]
@@ -50,8 +50,9 @@ class GenerateMasterList(object):
 
     def buildFiles(self):
         logging.info("Loading people")
-        all_people = Person.Person.allPeople(self.samplesInputPath(), '\t')
+        all_people = Person.Person.allPeople(self.samplesInputPath(), '\t', False)
         selected_people_by_id = Person.Person.peopleByIdFromFile(self.filteredSamplesPath())
+        logging.info("%d total people, %d selected", len(all_people), len(selected_people_by_id))
 
         logging.info("Loading snps")
         snp_data_set = DataSet.DataSetFileUtilities.loadFromCompressedFile(self.snp_input_path)
@@ -65,13 +66,8 @@ class GenerateMasterList(object):
 
     def buildContentFile(self, content_name, all_people, selected_people_by_id, snp_dict):
         input_path = os.path.join(self.input_path, content_name)
-        output_path = os.path.join(self.output_path, content_name)
-        if os.path.exists(output_path):
-            logging.info("%s already exists, delete it if you want it done again", output_path)
-            return
-
-        logging.info("building %s", output_path)
-        fileBuilder = GEUVADISUtilities.GEUVADISFilteredFilesBuilder(input_path, output_path, all_people, selected_people_by_id, snp_dict)
+        fileBuilder = GEUVADISUtilities.GEUVADISFilteredFilesBuilder(input_path, self.output_path, content_name, all_people, selected_people_by_id, snp_dict)
+        fileBuilder.run()
 
 if __name__ == "__main__":
     import argparse

@@ -2,6 +2,7 @@ __author__ = 'heroico'
 
 import os
 import gzip
+import csv
 
 def hapName(name):
     return name + ".hap.gz"
@@ -94,18 +95,27 @@ class FileIterator(object):
 
     def iterate(self,callback=None):
         if self.compressed:
-            with gzip.open(self.path, 'rb') as file:
-                self._iterateOverFile(file, callback)
+            with gzip.open(self.path, 'rb') as file_object:
+                self._iterateOverFile(file_object, callback)
         else:
-            with open(self.path, 'rb') as file:
-                self._iterateOverFile(file, callback)
+            with open(self.path, 'rb') as file_object:
+                self._iterateOverFile(file_object, callback)
 
-    def _iterateOverFile(self, file, callback):
-        for i,line in enumerate(file):
-            stripped = line.strip("\n")
-            if i==0 and self.header is not None:
-                assert stripped == self.header
-                continue
+    def _iterateOverFile(self, file_object, callback):
+        if self.header is not None:
+            line = file.readline().strip("\n")
+            assert line == self.header
 
-            if callback is not None:
-                callback(stripped)
+        self._processFile(file_object, callback)
+
+    def _processFile(self, file_object, callback):
+        if callback is not None:
+            for i,line in enumerate(file_object):
+                callback(i, line)
+
+class CSVFileIterator(FileIterator):
+    def _processFile(self, file_object, callback):
+        if callback is not None:
+            reader = csv.reader(file_object, delimiter=" ", quotechar='"')
+            for i,row in enumerate(reader):
+                callback(i, row)
