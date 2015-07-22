@@ -1,0 +1,7 @@
+.idea
+*.pyc
+data
+intermediate*
+results*
+TCheck*
+kk*
