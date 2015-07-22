@@ -55,10 +55,10 @@ class Person(object):
                 output_file.write(person.toTextLine()+"\n")
 
     @classmethod
-    def allPeople(cls, input):
+    def allPeople(cls, input, delim=' '):
         people = []
         with open(input, 'rb') as csv_file:
-            reader = csv.reader(csv_file, delimiter=' ', quotechar='"')
+            reader = csv.reader(csv_file, delimiter=delim, quotechar='"')
             for row in reader:
                 if reader.line_num == 1:
                     continue

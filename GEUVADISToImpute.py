@@ -7,10 +7,13 @@ import os
 import Logging
 import Utilities
 import Person
+import DataSet
+
 
 class GenerateMasterList(object):
     def __init__(self, args):
         self.input_path = args.input_folder
+        self.snp_input_path = args.snp_list
 
         self.intermediate_path = args.intermediate_folder
         self.output_folder = args.output_folder
@@ -24,13 +27,26 @@ class GenerateMasterList(object):
             os.mkdir(self.output_path)
 
         self.filterPeople()
+        self.buildFiles()
 
     def filterPeople(self):
+        samples_path = self.samplesInputPath()
+        filtered_samples_path = self.filteredSamplesPath()
+        Person.Person.filterSamples(samples_path, filtered_samples_path, "\t")
+
+    def samplesInputPath(self):
         samples_file = Utilities.contentsWithPatternsFromFolder(self.input_path, ["samples"])[0]
         samples_path = os.path.join(self.input_path, samples_file)
-        filtered_samples_path = os.path.join(self.output_path, "samples.sample")
+        return  samples_path
 
-        Person.Person.filterSamples(samples_path, filtered_samples_path, "\t")
+    def filteredSamplesPath(self):
+        filtered_samples_path = os.path.join(self.output_path, "samples.sample")
+        return filtered_samples_path
+
+    def buildFiles(self):
+        all_people = Person.Person.allPeople(self.samplesInputPath(), '\t')
+        selected_people_by_id = Person.Person.peopleByIdFromFile(self.filteredSamplesPath())
+        snp_data_set = DataSet.DataSetFileUtilities.loadFromCompressedFile(self.snp_input_path)
 
 if __name__ == "__main__":
     import argparse
@@ -39,6 +55,10 @@ if __name__ == "__main__":
     parser.add_argument("--input_folder",
                         help="Folder with GEUVADIS data",
                         default="data/dosagefiles-hapmap2")
+
+    parser.add_argument("--snp_list",
+                        help="file with selected snps",
+                        default="data/hapmapSnpsCEU.list.gz")
 
     parser.add_argument("--intermediate_folder",
                         help="higher level output folder",
