@@ -32,9 +32,9 @@ class DataSetFileUtilities(object):
     def _loadDataSetFromFile(cls,file, header_name):
         read_first_line = False
         data = []
-        for line in file:
-            if header_name is not None and not read_first_line:
-                assert header_name.strip("\n") == header_name
+        for i,line in enumerate(file):
+            if i == 0 and header_name is not None:
+                assert line.strip("\n") == header_name
                 continue
             data.append(line.strip("\n"))
         data_set = DataSet()

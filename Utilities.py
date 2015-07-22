@@ -1,6 +1,7 @@
 __author__ = 'heroico'
 
 import os
+import gzip
 
 def hapName(name):
     return name + ".hap.gz"
@@ -84,3 +85,27 @@ def removeNamesWithPatterns(list, patterns):
         if matches:
             found.append(name)
     return found
+
+class FileIterator(object):
+    def __init__(self, path, header=None, compressed = False):
+        self.path = path
+        self.compressed = compressed
+        self.header = header
+
+    def iterate(self,callback=None):
+        if self.compressed:
+            with gzip.open(self.path, 'rb') as file:
+                self._iterateOverFile(file, callback)
+        else:
+            with open(self.path, 'rb') as file:
+                self._iterateOverFile(file, callback)
+
+    def _iterateOverFile(self, file, callback):
+        for i,line in enumerate(file):
+            stripped = line.strip("\n")
+            if i==0 and self.header is not None:
+                assert stripped == self.header
+                continue
+
+            if callback is not None:
+                callback(stripped)

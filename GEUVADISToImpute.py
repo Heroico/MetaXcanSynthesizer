@@ -8,6 +8,7 @@ import Logging
 import Utilities
 import Person
 import DataSet
+import GEUVADISUtilities
 
 
 class GenerateMasterList(object):
@@ -32,7 +33,11 @@ class GenerateMasterList(object):
     def filterPeople(self):
         samples_path = self.samplesInputPath()
         filtered_samples_path = self.filteredSamplesPath()
-        Person.Person.filterSamples(samples_path, filtered_samples_path, "\t")
+        if os.path.exists(filtered_samples_path):
+            logging.info("%s already exists, delete it if you want it to be done again", filtered_samples_path)
+        else:
+            logging.info("Filtering people")
+            Person.Person.filterSamples(samples_path, filtered_samples_path, "\t")
 
     def samplesInputPath(self):
         samples_file = Utilities.contentsWithPatternsFromFolder(self.input_path, ["samples"])[0]
@@ -44,9 +49,29 @@ class GenerateMasterList(object):
         return filtered_samples_path
 
     def buildFiles(self):
+        logging.info("Loading people")
         all_people = Person.Person.allPeople(self.samplesInputPath(), '\t')
         selected_people_by_id = Person.Person.peopleByIdFromFile(self.filteredSamplesPath())
+
+        logging.info("Loading snps")
         snp_data_set = DataSet.DataSetFileUtilities.loadFromCompressedFile(self.snp_input_path)
+        snp_dict = {}
+        for snp in snp_data_set.data:
+            snp_dict[snp] = True
+
+        contents = Utilities.contentsWithPatternsFromFolder(self.input_path, ["dosage.txt.gz"])
+        for content_name in contents:
+            self.buildContentFile(content_name, all_people, selected_people_by_id, snp_dict)
+
+    def buildContentFile(self, content_name, all_people, selected_people_by_id, snp_dict):
+        input_path = os.path.join(self.input_path, content_name)
+        output_path = os.path.join(self.output_path, content_name)
+        if os.path.exists(output_path):
+            logging.info("%s already exists, delete it if you want it done again", output_path)
+            return
+
+        logging.info("building %s", output_path)
+        fileBuilder = GEUVADISUtilities.GEUVADISFilteredFilesBuilder(input_path, output_path, all_people, selected_people_by_id, snp_dict)
 
 if __name__ == "__main__":
     import argparse
