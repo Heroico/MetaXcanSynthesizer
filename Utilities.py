@@ -103,7 +103,7 @@ class FileIterator(object):
 
     def _iterateOverFile(self, file_object, callback):
         if self.header is not None:
-            line = file.readline().strip("\n")
+            line = file_object.readline().strip("\n")
             assert line == self.header
 
         self._processFile(file_object, callback)
