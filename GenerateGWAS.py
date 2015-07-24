@@ -7,15 +7,24 @@ import logging
 import numpy
 import Person
 import Logging
+import Utilities
 
 
 GWAS_FAM = "GWAS.fam"
+GWAS_LIST = "GWAS.list"
+GWAS_FILTER = "GWAS.filter"
 
 class GenerateGWAS(object):
     def __init__(self, args):
-        self.samples_file = args.samples
+        self.dosages_folder = args.dosages_folder
+        self.selected_samples_file = args.selected_samples
         self.snp_list_file = args.snp_list
+
         self.output_folder = args.output_folder
+        absolute_output_folder = os.path.join(os.getcwd(), self.output_folder)
+        self.FAM_output_path = os.path.join(absolute_output_folder, GWAS_FAM)
+        self.list_output_path = os.path.join(absolute_output_folder, GWAS_LIST)
+        self.filter_output_path = os.path.join(absolute_output_folder, GWAS_FILTER)
 
         self.mean = float(args.mean)
         self.se = float(args.se)
@@ -27,34 +36,77 @@ class GenerateGWAS(object):
 
         self.buildFAM()
 
+        self.runPLINK()
+
     def buildFAM(self):
-        output_path = os.path.join(self.output_folder, GWAS_FAM)
-        if os.path.exists(output_path):
-            logging.info("%s already exists, delete it if you want it to be generated again", output_path)
-            return
 
         numpy.random.seed(1000) #Introduce a seed, but have it be constant. We are not that interested in "truer" randomness at this time.
-        people = Person.Person.allPeople(self.samples_file)
+        all_samples_input_path = Utilities.samplesInputPath(self.dosages_folder)
+        all_people = Person.Person.allPeople(all_samples_input_path, '\t', False)
+        selected_people_by_id = Person.Person.peopleByIdFromFile(self.selected_samples_file)
 
-        with open(output_path, "wb") as file:
-            for person in people:
-                value = numpy.random.normal(self.mean, self.se)
-                if value < 0:
-                    value = 0
-                if value > self.cutoff:
-                    value = self.cutoff
-                value = str(value) if value > 0 else "0.0"
-                fields = [person.id, person.id, "0", "0", "0", value]
-                line = " ".join(fields)+"\n"
-                file.write(line)
+        if os.path.exists(self.FAM_output_path):
+            logging.info("%s already exists, delete it if you want it to be generated again", self.FAM_output_path)
+        else:
+            with open(self.FAM_output_path, "w") as file:
+                for person in all_people:
+                    value = numpy.random.normal(self.mean, self.se)
+                    if value < 0:
+                        value = 0
+                    if value > self.cutoff:
+                        value = self.cutoff
+                    value = str(value) if value > 0 else "0.0"
+                    fields = [person.id, person.id, "0", "0", "0", value]
+                    line = " ".join(fields)+"\n"
+                    file.write(line)
+
+        if os.path.exists(self.list_output_path):
+            logging.info("%s already exists, delete it if you want it to be generated again", self.list_output_path)
+        else:
+            with open(self.list_output_path, "w") as file:
+                for person in all_people:
+                    fields = [person.id, person.id]
+                    line = " ".join(fields)+"\n"
+                    file.write(line)
+
+        if os.path.exists(self.filter_output_path):
+            logging.info("%s already exists, delete it if you want it to be generated again", self.filter_output_path)
+        else:
+            with open(self.filter_output_path, "w") as file:
+                for person in all_people:
+                    value = "0"
+                    if person.id in selected_people_by_id:
+                        value = "1"
+                    fields = [person.id, person.id, value]
+                    line = " ".join(fields)+"\n"
+                    file.write(line)
+
+
+    def runPLINK(self):
+        base_dir = os.getcwd()
+        dosages_path = os.path.join(base_dir, self.dosages_folder)
+
+        contents = Utilities.contentsWithPatternsFromFolder(self.dosages_folder, ["dosage.txt.gz"])
+        os.chdir(self.output_folder)
+        for content in contents:
+            self.runPLINKForContent(dosages_path, content)
+
+    def runPLINKForContent(self, dosages_path, content):
+        pass
+
+
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description='Transform GEUVADIS-formatted data into IMPUTE-formatted. Will ')
+    parser = argparse.ArgumentParser(description='Build a synthetic phenotype and run plink on it')
 
-    parser.add_argument("--samples",
+    parser.add_argument("--selected_samples",
                         help="File with people samples",
                         default="intermediate/IMPUTE/samples.sample")
+
+    parser.add_argument("--dosages_folder",
+                        help="Folder with files with people dosages",
+                        default="data/dosagefiles-hapmap2")
 
     parser.add_argument("--snp_list",
                         help="file with selected snps",

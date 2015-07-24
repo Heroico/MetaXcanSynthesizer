@@ -119,3 +119,8 @@ class CSVFileIterator(FileIterator):
             reader = csv.reader(file_object, delimiter=" ", quotechar='"')
             for i,row in enumerate(reader):
                 callback(i, row)
+
+def samplesInputPath(path):
+    samples_file = contentsWithPatternsFromFolder(path, ["samples"])[0]
+    samples_path = os.path.join(path, samples_file)
+    return  samples_path

@@ -31,7 +31,7 @@ class GenerateMasterList(object):
         self.buildFiles()
 
     def filterPeople(self):
-        samples_path = self.samplesInputPath()
+        samples_path = Utilities.samplesInputPath(self.input_path)
         filtered_samples_path = self.filteredSamplesPath()
         if os.path.exists(filtered_samples_path):
             logging.info("%s already exists, delete it if you want it to be done again", filtered_samples_path)
@@ -39,18 +39,14 @@ class GenerateMasterList(object):
             logging.info("Filtering people")
             Person.Person.filterSamples(samples_path, filtered_samples_path, "\t", False)
 
-    def samplesInputPath(self):
-        samples_file = Utilities.contentsWithPatternsFromFolder(self.input_path, ["samples"])[0]
-        samples_path = os.path.join(self.input_path, samples_file)
-        return  samples_path
-
     def filteredSamplesPath(self):
         filtered_samples_path = os.path.join(self.output_path, "samples.sample")
         return filtered_samples_path
 
     def buildFiles(self):
         logging.info("Loading people")
-        all_people = Person.Person.allPeople(self.samplesInputPath(), '\t', False)
+        samples_input_path = Utilities.samplesInputPath(self.input_path)
+        all_people = Person.Person.allPeople(samples_input_path, '\t', False)
         selected_people_by_id = Person.Person.peopleByIdFromFile(self.filteredSamplesPath())
         logging.info("%d total people, %d selected", len(all_people), len(selected_people_by_id))
 
