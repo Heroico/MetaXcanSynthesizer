@@ -5,6 +5,7 @@ __author__ = 'heroico'
 import os
 import logging
 import numpy
+from subprocess import call
 import Person
 import Logging
 import Utilities
@@ -92,7 +93,16 @@ class GenerateGWAS(object):
             self.runPLINKForContent(dosages_path, content)
 
     def runPLINKForContent(self, dosages_path, content):
-        pass
+        #quick and dirty
+        chr = content.split(".dosage")[0]
+
+        command = "plink --fam GWAS.fam "
+        command += "--dosage %s " % os.path.join(dosages_path, content)
+        command += "noheader format=1 skip0=1 skip1=1 skip2=1 Zout "
+        command += "--out %s " % chr
+        command += "--allow-no-sex "
+        command += "--filter GWAS.filter 1"
+        call(command.split(" "))
 
 
 
