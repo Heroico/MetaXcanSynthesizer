@@ -9,12 +9,14 @@ import Utilities
 import Person
 import DataSet
 import GEUVADISUtilities
+import WeightDBUtilities
 
 
 class GenerateMasterList(object):
     def __init__(self, args):
         self.input_path = args.input_folder
         self.snp_input_path = args.snp_list
+        self.db_path = args.model_database
 
         self.intermediate_path = args.intermediate_folder
         self.output_folder = args.output_folder
@@ -50,11 +52,15 @@ class GenerateMasterList(object):
         selected_people_by_id = Person.Person.peopleByIdFromFile(self.filteredSamplesPath())
         logging.info("%d total people, %d selected", len(all_people), len(selected_people_by_id))
 
+        logging.info("Loading model database")
+        weight_db_logic = WeightDBUtilities.WeightDBEntryLogic(self.db_path)
+
         logging.info("Loading snps")
         snp_data_set = DataSet.DataSetFileUtilities.loadFromCompressedFile(self.snp_input_path)
         snp_dict = {}
         for snp in snp_data_set.data:
-            snp_dict[snp] = True
+            if snp in weight_db_logic.genes_for_an_rsid:
+                snp_dict[snp] = True
 
         contents = Utilities.contentsWithPatternsFromFolder(self.input_path, ["dosage.txt.gz"])
         for content_name in contents:
@@ -67,7 +73,7 @@ class GenerateMasterList(object):
 
 if __name__ == "__main__":
     import argparse
-    parser = argparse.ArgumentParser(description='Transform GEUVADIS-formatted data into IMPUTE-formatted. Will ')
+    parser = argparse.ArgumentParser(description='Transform GEUVADIS-formatted data into IMPUTE-formatted.')
 
     parser.add_argument("--input_folder",
                         help="Folder with GEUVADIS data",
@@ -76,6 +82,10 @@ if __name__ == "__main__":
     parser.add_argument("--snp_list",
                         help="file with selected snps",
                         default="data/hapmapSnpsCEU.list.gz")
+
+    parser.add_argument("--model_database",
+                        help="Model database",
+                        default="data/DGN-WB_0.5.db")
 
     parser.add_argument("--intermediate_folder",
                         help="higher level output folder",
