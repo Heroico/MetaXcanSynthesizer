@@ -52,10 +52,14 @@ class GenerateGWAS(object):
             with open(self.FAM_output_path, "w") as file:
                 for person in all_people:
                     value = numpy.random.normal(self.mean, self.se)
-                    if value < 0:
-                        value = 0
-                    if value > self.cutoff:
-                        value = self.cutoff
+                    if self.cutoff > 0:
+                        if value < 0:
+                            value = 0
+                        if value > self.cutoff:
+                            value = self.cutoff
+                        value = str(value) if value > 0 else "0.0"
+                    else:
+                        value = str(value)
                     value = str(value) if value > 0 else "0.0"
                     fields = [person.id, person.id, "0", "0", "0", value]
                     line = " ".join(fields)+"\n"
@@ -128,15 +132,15 @@ if __name__ == "__main__":
 
     parser.add_argument("--mean",
                         help="mean for simulated phenotype",
-                        default="0.5")
+                        default="0.0")
 
     parser.add_argument("--se",
                         help="standard deviation for simulated phenotype",
-                        default="0.2")
+                        default="1")
 
     parser.add_argument("--cutoff",
                         help="max upper bound for phenotype",
-                        default="1.0")
+                        default="-1.0")
 
     args = parser.parse_args()
 
