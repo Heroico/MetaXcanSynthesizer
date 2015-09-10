@@ -45,23 +45,14 @@ class GenerateGWAS(object):
         all_samples_input_path = Utilities.samplesInputPath(self.dosages_folder)
         all_people = Person.Person.allPeople(all_samples_input_path, '\t', False)
         selected_people_by_id = Person.Person.peopleByIdFromFile(self.selected_samples_file)
+        pheno = self.buildPheno(all_people)
 
         if os.path.exists(self.FAM_output_path):
             logging.info("%s already exists, delete it if you want it to be generated again", self.FAM_output_path)
         else:
             with open(self.FAM_output_path, "w") as file:
                 for person in all_people:
-                    value = numpy.random.normal(self.mean, self.se)
-                    if self.cutoff > 0:
-                        if value < 0:
-                            value = 0
-                        if value > self.cutoff:
-                            value = self.cutoff
-                        value = str(value) if value > 0 else "0.0"
-                    else:
-                        value = str(value)
-                    value = str(value) if value > 0 else "0.0"
-                    fields = [person.id, person.id, "0", "0", "0", value]
+                    fields = [person.id, person.id, "0", "0", "0", pheno[person.id]]
                     line = " ".join(fields)+"\n"
                     file.write(line)
 
@@ -86,6 +77,21 @@ class GenerateGWAS(object):
                     line = " ".join(fields)+"\n"
                     file.write(line)
 
+
+    def buildPheno(self, all_people):
+        pheno = {}
+        for person in all_people:
+            value = numpy.random.normal(self.mean, self.se)
+            if self.cutoff > 0:
+                if value < 0:
+                    value = 0
+                if value > self.cutoff:
+                    value = self.cutoff
+                value = str(value) if value > 0 else "0.0"
+            else:
+                value = str(value)
+            pheno[person.id] =value
+        return pheno
 
     def runPLINK(self):
         base_dir = os.getcwd()
