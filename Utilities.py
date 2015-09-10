@@ -121,6 +121,6 @@ class CSVFileIterator(FileIterator):
                 callback(i, row)
 
 def samplesInputPath(path):
-    samples_file = contentsWithPatternsFromFolder(path, ["samples"])[0]
+    samples_file = contentsWithPatternsFromFolder(path, ["sample"])[0]
     samples_path = os.path.join(path, samples_file)
     return  samples_path

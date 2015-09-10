@@ -43,7 +43,7 @@ class GenerateGWAS(object):
 
         numpy.random.seed(1000) #Introduce a seed, but have it be constant. We are not that interested in "truer" randomness at this time.
         all_samples_input_path = Utilities.samplesInputPath(self.dosages_folder)
-        all_people = Person.Person.allPeople(all_samples_input_path, '\t', False)
+        all_people = Person.Person.allPeople(all_samples_input_path, ' ', True)
         selected_people_by_id = Person.Person.peopleByIdFromFile(self.selected_samples_file)
 
         if os.path.exists(self.FAM_output_path):
@@ -60,7 +60,6 @@ class GenerateGWAS(object):
                         value = str(value) if value > 0 else "0.0"
                     else:
                         value = str(value)
-                    value = str(value) if value > 0 else "0.0"
                     fields = [person.id, person.id, "0", "0", "0", value]
                     line = " ".join(fields)+"\n"
                     file.write(line)
@@ -91,7 +90,9 @@ class GenerateGWAS(object):
         base_dir = os.getcwd()
         dosages_path = os.path.join(base_dir, self.dosages_folder)
 
-        contents = Utilities.contentsWithPatternsFromFolder(self.dosages_folder, ["dosage.txt.gz"])
+        logging.info("Running plink %s", dosages_path)
+
+        contents = Utilities.contentsWithPatternsFromFolder(self.dosages_folder, ["dosage.gz"])
         os.chdir(self.output_folder)
         for content in contents:
             self.runPLINKForContent(dosages_path, content)
@@ -136,10 +137,11 @@ if __name__ == "__main__":
 
     parser.add_argument("--se",
                         help="standard deviation for simulated phenotype",
-                        default="1")
+
+                        default="1.0")
 
     parser.add_argument("--cutoff",
-                        help="max upper bound for phenotype",
+                        help="max upper bound for phenotype. -1 to disable (disabled by default)",
                         default="-1.0")
 
     args = parser.parse_args()
