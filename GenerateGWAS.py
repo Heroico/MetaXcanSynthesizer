@@ -31,6 +31,8 @@ class GenerateGWAS(object):
         self.se = float(args.se)
         self.cutoff = float(args.cutoff)
 
+        self.input_pheno = args.input_phenotype
+
     def run(self):
         if not os.path.exists(self.output_folder):
             os.mkdir(self.output_folder)
@@ -52,7 +54,11 @@ class GenerateGWAS(object):
         else:
             with open(self.FAM_output_path, "w") as file:
                 for person in all_people:
-                    fields = [person.id, person.id, "0", "0", "0", pheno[person.id]]
+                    value = "NA"
+                    id = person.id
+                    if id in pheno:
+                        value = pheno[id]
+                    fields = [id, id, "0", "0", "0", value]
                     line = " ".join(fields)+"\n"
                     file.write(line)
 
@@ -79,6 +85,27 @@ class GenerateGWAS(object):
 
 
     def buildPheno(self, all_people):
+        pheno = None
+        if self.input_pheno:
+            pheno = self.phenoFromFile(all_people)
+        else:
+            pheno = self.buildSimulatedPheno(all_people)
+        return pheno
+
+    def phenoFromFile(self, all_people):
+        pheno = {}
+        ids = {person.id:True for person in all_people}
+        with open(self.input_pheno) as file:
+            for line in file:
+                comps = line.strip().split(",")
+                id = comps[0]
+                value = comps[4]
+                if not id in ids:
+                    continue
+                pheno[id] = value
+        return pheno
+
+    def buildSimulatedPheno(self, all_people):
         pheno = {}
         for person in all_people:
             value = numpy.random.normal(self.mean, self.se)
@@ -150,6 +177,10 @@ if __name__ == "__main__":
     parser.add_argument("--cutoff",
                         help="max upper bound for phenotype. -1 to disable (disabled by default)",
                         default="-1.0")
+
+    parser.add_argument("--input_phenotype",
+                        help="Optional: file with input phenotype",
+                        default = None)
 
     args = parser.parse_args()
 
