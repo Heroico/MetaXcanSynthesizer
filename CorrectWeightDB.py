@@ -1,26 +1,47 @@
 #! /usr/bin/env python
 __author__ = 'heroico'
 
+import os
 import logging
 import gzip
 import math
+import re
 import Logging
 import sqlite3
-
+import Utilities
 
 class FixDB(object):
     def __init__(self, args):
         self.weight_db = args.weight_db
+        self.weight_db_folder = args.weight_db_folder
+        self.weight_db_regexp = None
+        if args.weight_db_pattern:
+            self.weight_db_regexp = re.compile(args.weight_db_pattern)
+        else:
+            self.weight_db_regexp = re.compile(".*")
         self.var_path = args.variance_file
 
     def run(self):
         logging.info("Loading variance %s", self.var_path)
         variance = self.loadVariance(self.var_path)
 
-        self.fixDBAtPath(self.weight_db, variance)
+        if self.weight_db_folder:
+            self.fixDBSAtFolder(self.weight_db_folder, variance)
+        elif self.weight_db:
+            self.fixDBAtPath(self.weight_db, variance)
+
+    def fixDBSAtFolder(self, folder, variance):
+        contents = Utilities.contentsWithRegexpFromFolder(folder, self.weight_db_regexp)
+        for content in contents:
+            path = os.path.join(folder, content)
+            size = os.path.getsize(path)
+            if size==0:
+                logging.info("Skipping %s, zero size", path)
+                continue
+            self.fixDBAtPath(path, variance)
 
     def fixDBAtPath(self, path, variance):
-        connection = sqlite3.connect(self.weight_db)
+        connection = sqlite3.connect(path)
         cursor = connection.cursor()
 
         logging.info("Loading db %s", path)
@@ -33,13 +54,13 @@ class FixDB(object):
             snp = result[0]
             if not snp in variance:
                 logging.log(9, "snp %s not in variance", snp)
-                self.deleteSnpFromDB(snp, cursor, connection)
+                self.deleteSnpFromDB(snp, cursor)
                 continue
 
             var = float(variance[snp])
             if var == 0:
                 logging.log(9, "zero variance for snp %s", (snp,))
-                self.deleteSnpFromDB(snp, cursor, connection)
+                self.deleteSnpFromDB(snp, cursor)
                 continue
 
             gene = result[2]
@@ -52,7 +73,7 @@ class FixDB(object):
         connection.commit()
         connection.close()
 
-    def deleteSnpFromDB(self, snp, cursor, connection):
+    def deleteSnpFromDB(self, snp, cursor):
         cursor.execute("DELETE FROM weights where rsid = ?", (snp,))
 
     def loadVariance(self, path):
@@ -73,7 +94,15 @@ if __name__ == "__main__":
 
     parser.add_argument("--weight_db",
                         help="Database with transcriptome model",
-                        default="data/mod/DGN-WB_0.5.db")
+                        default=None)
+
+    parser.add_argument("--weight_db_folder",
+                        help="Folder with databases with transcriptome model",
+                        default=None)
+
+    parser.add_argument("--weight_db_pattern",
+                        help="Regexp pattern of dbs to process",
+                        default=None)
 
     parser.add_argument("--variance_file",
                         help="File with dosage variance",

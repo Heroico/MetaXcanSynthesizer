@@ -52,6 +52,11 @@ def contentsWithPatternsFromFolder(folder, patterns):
 
     return paths
 
+def contentsWithRegexpFromFolder(folder, regexp):
+    contents = os.listdir(folder)
+    paths = [x for x in contents if regexp.match(x)] if regexp else contents
+    return paths
+
 def removeNameWithPatterns(list, patterns):
     found = None
     for name in list:
