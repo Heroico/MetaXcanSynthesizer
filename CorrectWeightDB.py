@@ -52,18 +52,19 @@ class FixDB(object):
 
         for i,result in enumerate(results):
             snp = result[0]
+            gene = result[2]
             if not snp in variance:
                 logging.log(9, "snp %s not in variance", snp)
-                self.deleteSnpFromDB(snp, cursor)
+                #we could just go ahead and delete this snp from all genes, but whatever, It's more a semantyc kind of thing.
+                self.deleteSnpFromDB(snp, gene, cursor)
                 continue
 
             var = float(variance[snp])
             if var == 0:
                 logging.log(9, "zero variance for snp %s", (snp,))
-                self.deleteSnpFromDB(snp, cursor)
+                #we could just go ahead and delete this snp from all genes, but whatever, It's more a semantyc kind of thing.
+                self.deleteSnpFromDB(snp, gene, cursor)
                 continue
-
-            gene = result[2]
 
             sigma = math.sqrt(var)
             weight = float(result[1])
@@ -73,8 +74,8 @@ class FixDB(object):
         connection.commit()
         connection.close()
 
-    def deleteSnpFromDB(self, snp, cursor):
-        cursor.execute("DELETE FROM weights where rsid = ?", (snp,))
+    def deleteSnpFromDB(self, snp, gene, cursor):
+        cursor.execute("DELETE FROM weights where rsid = :r and gene = :g", {"s":snp,"g":gene})
 
     def loadVariance(self, path):
         variance = {}
