@@ -33,7 +33,7 @@ class GenerateGWAS(object):
 
     def run(self):
         if not os.path.exists(self.output_folder):
-            os.mkdir(self.output_folder)
+            os.makedirs(self.output_folder)
 
         self.buildFAM()
 

@@ -1,0 +1,9 @@
+Rscript PrediXcanAssociation.R --predicted data/predict_db_tgf_sel.txt --pheno intermediate/TGF_SEL_GWAS/GWAS.fam  --filter intermediate/TGF_SEL_GWAS/GWAS.filter --output intermediate/predixcan_sel_twwb.txt
+
+
+# Notice Full pheno, full predicted, afr filter
+Rscript PrediXcanAssociation.R
+--predicted data/predict_db_tgf_sel.txt
+--pheno intermediate/TGF_SEL_GWAS/GWAS.fam
+--filter intermediate/TGF_AFR_GWAS/GWAS.filter
+--output intermediate/predixcan_afr_twwb.txt
