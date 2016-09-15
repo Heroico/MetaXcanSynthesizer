@@ -43,7 +43,7 @@ class GenerateGWAS(object):
 
         numpy.random.seed(1000) #Introduce a seed, but have it be constant. We are not that interested in "truer" randomness at this time.
         all_samples_input_path = Utilities.samplesInputPath(self.dosages_folder)
-        all_people = Person.Person.allPeople(all_samples_input_path, '\t', False)
+        all_people = Person.Person.allPeople(all_samples_input_path, ' ', True)
         selected_people_by_id = Person.Person.peopleByIdFromFile(self.selected_samples_file)
         pheno = self.buildPheno(all_people)
 
@@ -97,7 +97,8 @@ class GenerateGWAS(object):
         base_dir = os.getcwd()
         dosages_path = os.path.join(base_dir, self.dosages_folder)
 
-        contents = Utilities.contentsWithPatternsFromFolder(self.dosages_folder, ["dosage.txt.gz"])
+        contents = Utilities.contentsWithPatternsFromFolder(self.dosages_folder, ["dosage.gz"])
+        print contents
         os.chdir(self.output_folder)
         for content in contents:
             self.runPLINKForContent(dosages_path, content)

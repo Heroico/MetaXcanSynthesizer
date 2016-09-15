@@ -7,3 +7,9 @@ Rscript PrediXcanAssociation.R
 --pheno intermediate/TGF_SEL_GWAS/GWAS.fam
 --filter intermediate/TGF_AFR_GWAS/GWAS.filter
 --output intermediate/predixcan_afr_twwb.txt
+
+Rscript PrediXcanAssociation.R \
+--predicted data/predicted_sel_dgnwb.txt \
+--pheno intermediate/TGF_SEL_GWAS/GWAS.fam \
+--filter intermediate/TGF_AFR_GWAS/GWAS.filter \
+--output intermediate/predixcan_afr_dgnwb.txt
