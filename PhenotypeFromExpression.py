@@ -1,6 +1,5 @@
 #! /usr/bin/env python
 
-import os
 import logging
 import numpy
 import pandas
@@ -18,13 +17,16 @@ def standardize(x):
     return x
 
 def load_expression(expression):
-    expression = pandas.read_table(args.expression)
+    expression = pandas.read_table(expression)
     expression = expression.apply(standardize)
     expression = expression.dropna(axis=1)
     return expression
 
 def run(args):
+    logging.info("Reading samples")
     samples = pandas.read_table(args.selected_samples, sep="\s+")
+
+    logging.info("Reading expression")
     expression = load_expression(args.expression)
     columns = expression.columns
 
@@ -41,6 +43,8 @@ def run(args):
     effect_sizes = pandas.DataFrame(effect_sizes)
     effect_sizes_path = args.output_prefix + ".effect_sizes.txt"
     effect_sizes.to_csv(effect_sizes_path, index=False, sep="\t")
+
+    logging.info("Ran")
 
 if __name__ == "__main__":
     import argparse
