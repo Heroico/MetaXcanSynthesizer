@@ -37,6 +37,7 @@ print("Preparing data")
 merged_people = merge(fam, filter)
 merged <- cbind(predicted, merged_people)
 filtered <- merged %>% filter(FILTER==1)
+print(sprintf("Got %d cases", nrow(filtered)))
 
 pheno <- filtered$PHENO
 filtered <- subset(filtered, select = genes)

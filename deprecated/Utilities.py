@@ -124,3 +124,8 @@ def samplesInputPath(path):
     samples_file = contentsWithPatternsFromFolder(path, ["sample"])[0]
     samples_path = os.path.join(path, samples_file)
     return  samples_path
+
+def ensure_requisite_folders(path):
+    folder = os.path.split(path)[0]
+    if len(folder) and not os.path.exists(folder):
+        os.makedirs(folder)

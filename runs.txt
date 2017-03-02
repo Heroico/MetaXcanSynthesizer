@@ -1,0 +1,40 @@
+Rscript PrediXcanAssociation.R --predicted data/predict_db_tgf_sel.txt --pheno intermediate/TGF_SEL_GWAS/GWAS.fam  --filter intermediate/TGF_SEL_GWAS/GWAS.filter --output intermediate/predixcan_sel_twwb.txt
+
+
+# Notice Full pheno, full predicted, afr filter
+
+Rscript PrediXcanAssociation.R \
+--predicted data/predicted_sel_dgnwb.txt \
+--pheno intermediate/new_synth/GWAS_SIM_TGF_SEL/GWAS.fam \
+--filter intermediate/old_synth/GWAS_SIM_TGF_AFR/GWAS.filter \
+--output results/predixcan_sim_afr_dgnwb.txt
+
+Rscript PrediXcanAssociation.R \
+--predicted data/predicted_sel_dgnwb.txt \
+--pheno intermediate/new_synth/GWAS_SIM_TGF_SEL/GWAS.fam \
+--filter intermediate/old_synth/GWAS_SIM_TGF_EUR/GWAS.filter \
+--output results/predixcan_sim_eur_dgnwb.txt
+
+Rscript PrediXcanAssociation.R \
+--predicted data/predicted_sel_dgnwb.txt \
+--pheno intermediate/new_synth/GWAS_SIM_TGF_SEL/GWAS.fam \
+--filter intermediate/old_synth/GWAS_SIM_TGF_EAS/GWAS.filter \
+--output results/predixcan_sim_eas_dgnwb.txt
+
+Rscript PrediXcanAssociation.R \
+--predicted data/predicted_sel_dgnwb.txt \
+--pheno intermediate/new_synth/GWAS_IGROWTH_TGF_SEL/GWAS.fam \
+--filter intermediate/old_synth/GWAS_IGROWTH_EAS/GWAS.filter \
+--output results/predixcan_igrowth_eas_dgnwb.txt
+
+Rscript PrediXcanAssociation.R \
+--predicted data/predicted_sel_dgnwb.txt \
+--pheno intermediate/new_synth/GWAS_IGROWTH_TGF_SEL/GWAS.fam \
+--filter intermediate/old_synth/GWAS_IGROWTH_EUR/GWAS.filter \
+--output results/predixcan_igrowth_eur_dgnwb.txt
+
+Rscript PrediXcanAssociation.R \
+--predicted data/predicted_sel_dgnwb.txt \
+--pheno intermediate/new_synth/GWAS_IGROWTH_TGF_SEL/GWAS.fam \
+--filter intermediate/old_synth/GWAS_IGROWTH_AFR/GWAS.filter \
+--output results/predixcan_igrowth_afr_dgnwb.txt
