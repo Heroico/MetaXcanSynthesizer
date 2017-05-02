@@ -50,7 +50,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='Build a synthetic phenotype from expression file')
 
-    parser.add_argument("--selected_samples", help="File with people samples ('ID POP GROUP SEX' header)", default=None)
+    parser.add_argument("--selected_samples", help="File with people samples ('ID POP GROUP SEX' expected header)", default=None)
     parser.add_argument("--expression", help="File with expression to use", default=None)
     parser.add_argument("--output_prefix", help="Where to save the phenotype", default=None)
     parser.add_argument("--verbosity", help="Logging verbosity", default=10)
