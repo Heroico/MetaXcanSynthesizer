@@ -38,9 +38,12 @@ def _pheno(expressions, effect_sizes):
     p = p+e
     return p,e
 
-def _build_pheno(samples, expressions, effect_sizes):
+def _build_pheno(samples, expressions, effect_sizes, standardize_pheno):
     pheno = pandas.DataFrame(samples)
     _p, _noise = _pheno(expressions, effect_sizes)
+    #IMPORTANT! we normalize the phenotype.
+    if standardize_pheno:
+        _p = PhenotypeFromExpression.standardize(_p)
     pheno["PHENO"] = _p
     pheno["NOISE"] = _noise
     return  pheno
@@ -49,11 +52,10 @@ def load_expressions(expressions):
     expressions = {_tissue_name(e):PhenotypeFromExpression.load_expression(e) for e in expressions}
     return expressions
 
-def build_pheno(samples, expressions, selected_genes):
+def build_pheno(samples, expressions, selected_genes, standardize_pheno):
     effect_sizes = _effect_sizes(expressions, selected_genes)
-    pheno = _build_pheno(samples, expressions, effect_sizes)
+    pheno = _build_pheno(samples, expressions, effect_sizes, standardize_pheno)
     return pheno, effect_sizes
-
 
 def run(args):
     logging.info("Reading samples")
@@ -66,7 +68,7 @@ def run(args):
     # Introduce a seed, but have it be constant for reproducibility. We are not that interested in "truer" randomness at this time.
     numpy.random.seed(1000)
 
-    pheno, effect_sizes = build_pheno(samples, expressions, args.genes)
+    pheno, effect_sizes = build_pheno(samples, expressions, args.genes, args.standardize)
 
     Utilities.ensure_requisite_folders(args.output_prefix)
     pheno.to_csv(args.output_prefix + ".full_pheno.txt", index=False, sep="\t")
@@ -84,7 +86,9 @@ if __name__ == "__main__":
     parser.add_argument("--expressions", help="File with expression to use", default=[], type=str, nargs="+")
     parser.add_argument("--genes", help="File with expression to use", default=[], type=str, nargs="+")
     parser.add_argument("--output_prefix", help="Where to save the phenotype", default=None)
+    parser.add_argument("--standardize", help="Standardize pheno", action="store_true", default=False)
     parser.add_argument("--verbosity", help="Logging verbosity", default=10)
+
 
     args = parser.parse_args()
 

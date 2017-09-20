@@ -6,9 +6,20 @@ import os
 import re
 import logging
 import pandas
+import numpy
 from subprocess import call
 
 from utils import Logging
+
+def _get_pheno(input_pheno, samples):
+    if input_pheno:
+        pheno = pandas.read_table(input_pheno, sep="\s+")
+        pheno = pheno[["ID", "PHENO"]]
+        return pheno
+
+    p = numpy.random.normal(size=len(samples))
+    p = pandas.DataFrame(data = {"ID":samples.ID, "PHENO":p})
+    return p
 
 #This method is the most rigid thing of this script.
 def process_pheno(dosage_folder, input_pheno, output_folder):
@@ -21,8 +32,7 @@ def process_pheno(dosage_folder, input_pheno, output_folder):
     if list(samples.columns.values) != ["ID", "POP", "GROUP", "SEX"]:
         raise RuntimeError("Unexpected samples file")
 
-    pheno = pandas.read_table(input_pheno, sep="\s+")
-    pheno = pheno[["ID", "PHENO"]]
+    pheno = _get_pheno(input_pheno, samples)
     merged = pandas.merge(samples, pheno, how="left", on="ID")
 
     valid = ~merged.PHENO.isnull()
@@ -73,6 +83,9 @@ def run(args):
     if os.path.exists(args.output_folder):
         logging.info("Output already exists, delete/move it if you want it done again.")
         return
+
+    #set seed for reproducibility
+    numpy.random.seed(1000)
 
     os.makedirs(args.output_folder)
     process_pheno(args.dosage_folder, args.input_pheno, args.output_folder)
